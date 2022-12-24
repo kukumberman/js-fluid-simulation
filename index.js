@@ -16,6 +16,8 @@ const config = {
 const pointers = []
 const splatStack = []
 
+pointers.push(new PointerPrototype())
+
 const context = getWebGLContext(canvas)
 const { gl, ext, support_linear_float } = context
 
@@ -27,7 +29,7 @@ function getWebGLContext(canvas) {
     antialias: false,
   }
 
-  const gl = canvas.getContext("webgl2", params)
+  let gl = canvas.getContext("webgl2", params)
 
   const isWebGL2 = !!gl
 
@@ -62,7 +64,7 @@ function getWebGLContext(canvas) {
   }
 }
 
-function pointerPrototype() {
+function PointerPrototype() {
   this.id = -1
   this.x = 0
   this.y = 0
@@ -72,8 +74,6 @@ function pointerPrototype() {
   this.moved = false
   this.color = [30, 0, 300]
 }
-
-pointers.push(new pointerPrototype())
 
 const GLProgram = (function () {
   function GLProgram(vertexShader, fragmentShader) {
@@ -522,10 +522,6 @@ const blit = (function () {
   }
 })()
 
-let lastTime = Date.now()
-
-update()
-
 function update() {
   resizeCanvas()
 
@@ -590,7 +586,7 @@ function update() {
 
   clearProgram.bind()
 
-  var pressureTexId = pressure.first[2]
+  let pressureTexId = pressure.first[2]
 
   gl.activeTexture(gl.TEXTURE0 + pressureTexId)
   gl.bindTexture(gl.TEXTURE_2D, pressure.first[0])
@@ -605,7 +601,7 @@ function update() {
   pressureTexId = pressure.first[2]
   gl.activeTexture(gl.TEXTURE0 + pressureTexId)
 
-  for (var _i = 0; _i < config.PRESSURE_ITERATIONS; _i++) {
+  for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
     gl.bindTexture(gl.TEXTURE_2D, pressure.first[0])
     gl.uniform1i(pressureProgram.uniforms.uPressure, pressureTexId)
     blit(pressure.second[1])
@@ -657,9 +653,6 @@ function resizeCanvasImmediately(width, height) {
   initFramebuffers()
 }
 
-let count = 0
-const colorArray = [0, 1, 0]
-
 function changeColor() {
   if (count++ > 25) {
     count = 0
@@ -693,7 +686,7 @@ canvas.addEventListener(
     const touches = e.targetTouches
 
     for (let i = 0; i < touches.length; i++) {
-      if (i >= pointers.length) pointers.push(new pointerPrototype())
+      if (i >= pointers.length) pointers.push(new PointerPrototype())
 
       pointers[i].id = touches[i].identifier
       pointers[i].down = true
@@ -716,3 +709,10 @@ canvas.addEventListener(
 window.addEventListener("resize", () => {
   resizeCanvas()
 })
+
+let count = 0
+const colorArray = [0, 1, 0]
+
+let lastTime = Date.now()
+
+update()
