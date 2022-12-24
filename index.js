@@ -1,5 +1,7 @@
 import Editor from "./js/Editor.js"
 
+const useImguiEditor = new URLSearchParams(window.location.search).has("imgui")
+
 const canvas = document.querySelector("canvas")
 
 const config = {
@@ -531,7 +533,9 @@ function update() {
   simulate()
 
   //! causes rendering issues
-  // editor.render()
+  if (useImguiEditor) {
+    editor.render()
+  }
 
   requestAnimationFrame(update)
 }
