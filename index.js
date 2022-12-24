@@ -1,7 +1,6 @@
-const canvas = document.querySelector("canvas")
+import Editor from "./js/Editor.js"
 
-canvas.width = canvas.clientWidth
-canvas.height = canvas.clientHeight
+const canvas = document.querySelector("canvas")
 
 const config = {
   TEXTURE_DOWNSAMPLE: 1,
@@ -412,6 +411,9 @@ let divergence = void 0
 let curl = void 0
 let pressure = void 0
 
+const vertexBuffer = gl.createBuffer()
+const idxBuffer = gl.createBuffer()
+
 initFramebuffers()
 
 const clearProgram = new GLProgram(baseVertexShader, clearShader)
@@ -508,19 +510,21 @@ function createDoubleFBO(texId, w, h, internalFormat, format, type, param) {
   }
 }
 
-const blit = (function () {
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+function init() {
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), gl.STATIC_DRAW)
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer())
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuffer)
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW)
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-  gl.enableVertexAttribArray(0)
 
-  return function (destination) {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, destination)
-    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
-  }
-})()
+  const location = 0
+  gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0)
+  gl.enableVertexAttribArray(location)
+}
+
+function blit(destination) {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, destination)
+  gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+}
 
 function update() {
   resizeCanvas()
@@ -529,6 +533,8 @@ function update() {
   lastTime = Date.now()
 
   gl.viewport(0, 0, textureWidth, textureHeight)
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuffer)
 
   if (splatStack.length > 0) {
     for (let i = 0; i < splatStack.pop(); i++) {
@@ -619,6 +625,9 @@ function update() {
   displayProgram.bind()
   gl.uniform1i(displayProgram.uniforms.uTexture, density.first[2])
   blit(null)
+
+  //! causes rendering issues
+  // editor.render()
 
   requestAnimationFrame(update)
 }
@@ -715,4 +724,12 @@ const colorArray = [0, 1, 0]
 
 let lastTime = Date.now()
 
-update()
+const editor = new Editor(gl)
+
+async function main() {
+  await editor.setup()
+  init()
+  update()
+}
+
+main()
