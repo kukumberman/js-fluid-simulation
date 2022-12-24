@@ -528,7 +528,15 @@ function blit(destination) {
 
 function update() {
   resizeCanvas()
+  simulate()
 
+  //! causes rendering issues
+  // editor.render()
+
+  requestAnimationFrame(update)
+}
+
+function simulate() {
   const dt = Math.min((Date.now() - lastTime) / 1000, 1 / 60)
   lastTime = Date.now()
 
@@ -625,11 +633,6 @@ function update() {
   displayProgram.bind()
   gl.uniform1i(displayProgram.uniforms.uTexture, density.first[2])
   blit(null)
-
-  //! causes rendering issues
-  // editor.render()
-
-  requestAnimationFrame(update)
 }
 
 function splat(x, y, dx, dy, color) {
