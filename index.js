@@ -402,11 +402,17 @@ function splat(x, y, dx, dy, color) {
 }
 
 function resizeCanvas() {
-  if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-    canvas.width = canvas.clientWidth
-    canvas.height = canvas.clientHeight
-    initFramebuffers()
+  const width = window.innerWidth
+  const height = window.innerHeight
+  if (canvas.width !== width || canvas.height !== height) {
+    resizeCanvasImmediately(width, height)
   }
+}
+
+function resizeCanvasImmediately(width, height) {
+  canvas.width = width
+  canvas.height = height
+  initFramebuffers()
 }
 
 let count = 0
@@ -464,3 +470,7 @@ canvas.addEventListener(
   },
   false
 )
+
+window.addEventListener("resize", () => {
+  resizeCanvas()
+})
